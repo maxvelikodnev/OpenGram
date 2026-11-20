@@ -96,7 +96,7 @@ android {
         release {
             debuggable false
             jniDebuggable false
-            signingConfig signingConfigs.release
+            signingConfig signingConfigs.opengram
             minifyEnabled true
             shrinkResources true
             multiDexEnabled true

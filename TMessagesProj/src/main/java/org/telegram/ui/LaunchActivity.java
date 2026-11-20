@@ -1273,7 +1273,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
 
     private void switchToAvailableAccountOrLogout() {
         int account = -1;
-        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+        for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
             if (UserConfig.getInstance(a).isClientActivated()) {
                 account = a;
                 break;
@@ -2620,7 +2620,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                                         if (accountUserID != null) {
                                             try {
                                                 long wantUserId = Long.parseLong(accountUserID);
-                                                for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+                                                for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
                                                     UserConfig cfg = UserConfig.getInstance(a);
                                                     if (cfg.isClientActivated() && cfg.getClientUserId() == wantUserId) {
                                                         intentAccount[0] = a;
@@ -2910,7 +2910,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                                         if (cursor.moveToFirst()) {
                                             long userId = cursor.getLong(cursor.getColumnIndex(ContactsContract.Data.DATA4));
                                             int accountId = Utilities.parseInt(cursor.getString(cursor.getColumnIndex(ContactsContract.RawContacts.ACCOUNT_NAME)));
-                                            for (int a = -1; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+                                            for (int a = -1; a < UserConfig.getAccountSlotsCount(); a++) {
                                                 int i = a == -1 ? intentAccount[0] : a;
                                                 if ((a == -1 && MessagesStorage.getInstance(i).containsLocalDialog(userId)) || UserConfig.getInstance(i).getClientUserId() == accountId) {
                                                     intentAccount[0] = i;
@@ -8876,7 +8876,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                 layersActionBarLayout.getView().setVisibility(View.VISIBLE);
 
                 int account = -1;
-                for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+                for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
                     if (UserConfig.getInstance(a).isClientActivated()) {
                         account = a;
                         break;
@@ -8949,7 +8949,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                 layersActionBarLayout.getView().setVisibility(View.VISIBLE);
 
                 int account = -1;
-                for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+                for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
                     if (UserConfig.getInstance(a).isClientActivated()) {
                         account = a;
                         break;

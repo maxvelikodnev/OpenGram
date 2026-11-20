@@ -25,8 +25,37 @@ import java.util.Arrays;
 public class UserConfig extends BaseController {
 
     public static int selectedAccount;
-    public final static int MAX_ACCOUNT_DEFAULT_COUNT = 3;
-    public final static int MAX_ACCOUNT_COUNT = 4;
+    private static volatile AccountSlots accountSlots;
+
+    private static AccountSlots accountSlots() {
+        AccountSlots slots = accountSlots;
+        if (slots == null) {
+            synchronized (UserConfig.class) {
+                slots = accountSlots;
+                if (slots == null) {
+                    SharedPreferences preferences = ApplicationLoader.applicationContext
+                        .getSharedPreferences("opengramAccounts", Context.MODE_PRIVATE);
+                    slots = new AccountSlots(Math.max(4, preferences.getInt("slotCount", 4)), count -> {
+                        // Persist before exposing a new slot, so it is discovered after a restart.
+                        if (!preferences.edit().putInt("slotCount", count).commit()) {
+                            throw new IllegalStateException("Unable to save account slot registry");
+                        }
+                    });
+                    accountSlots = slots;
+                }
+            }
+        }
+        return slots;
+    }
+
+    public static int getAccountSlotsCount() {
+        // Some controller classes can be loaded before Application.onCreate.
+        return ApplicationLoader.applicationContext == null ? 4 : accountSlots().count();
+    }
+
+    public static int getAvailableAccount() {
+        return accountSlots().findAvailable(account -> getInstance(account).isClientActivated());
+    }
 
     private final Object sync = new Object();
     private volatile boolean configLoaded;
@@ -85,14 +114,14 @@ public class UserConfig extends BaseController {
     LongSparseArray<SaveToGallerySettingsHelper.DialogException> groupsSaveGalleryExceptions;
 
 
-    private static volatile UserConfig[] Instance = new UserConfig[UserConfig.MAX_ACCOUNT_COUNT];
+    private static volatile org.telegram.messenger.AccountStore<UserConfig> Instance = new org.telegram.messenger.AccountStore<>();
     public static UserConfig getInstance(int num) {
-        UserConfig localInstance = Instance[num];
+        UserConfig localInstance = Instance.get(num);
         if (localInstance == null) {
             synchronized (UserConfig.class) {
-                localInstance = Instance[num];
+                localInstance = Instance.get(num);
                 if (localInstance == null) {
-                    Instance[num] = localInstance = new UserConfig(num);
+                    Instance.set(num, localInstance = new UserConfig(num));
                 }
             }
         }
@@ -101,7 +130,7 @@ public class UserConfig extends BaseController {
 
     public static int getActivatedAccountsCount() {
         int count = 0;
-        for (int a = 0; a < MAX_ACCOUNT_COUNT; a++) {
+        for (int a = 0; a < getAccountSlotsCount(); a++) {
             if (AccountInstance.getInstance(a).getUserConfig().isClientActivated()) {
                 count++;
             }
@@ -114,16 +143,12 @@ public class UserConfig extends BaseController {
     }
 
     public static boolean hasPremiumOnAccounts() {
-        for (int a = 0; a < MAX_ACCOUNT_COUNT; a++) {
+        for (int a = 0; a < getAccountSlotsCount(); a++) {
             if (AccountInstance.getInstance(a).getUserConfig().isClientActivated() && AccountInstance.getInstance(a).getUserConfig().getUserConfig().isPremium()) {
                 return true;
             }
         }
         return false;
-    }
-
-    public static int getMaxAccountCount() {
-        return hasPremiumOnAccounts() ? 5 : 3;
     }
 
     public int getNewMessageId() {
@@ -232,7 +257,7 @@ public class UserConfig extends BaseController {
     }
 
     public static boolean isValidAccount(int num) {
-         return num >= 0 && num < UserConfig.MAX_ACCOUNT_COUNT && getInstance(num).isClientActivated();
+         return num >= 0 && num < UserConfig.getAccountSlotsCount() && getInstance(num).isClientActivated();
     }
 
     public boolean isClientActivated() {
@@ -264,6 +289,7 @@ public class UserConfig extends BaseController {
             TLRPC.User oldUser = currentUser;
             currentUser = user;
             clientUserId = user.id;
+            accountSlots().ensureCount(Math.addExact(currentAccount, 2));
             checkPremiumSelf(oldUser, user);
         }
     }
@@ -375,6 +401,9 @@ public class UserConfig extends BaseController {
             if (currentUser != null) {
                 checkPremiumSelf(null, currentUser);
                 clientUserId = currentUser.id;
+            }
+            if (clientUserId != 0) {
+                accountSlots().ensureCount(Math.addExact(currentAccount, 2));
             }
             configLoaded = true;
         }
@@ -497,7 +526,7 @@ public class UserConfig extends BaseController {
         lastHintsSyncTime = (int) (System.currentTimeMillis() / 1000) - 25 * 60 * 60;
         resetSavedPassword();
         boolean hasActivated = false;
-        for (int a = 0; a < MAX_ACCOUNT_COUNT; a++) {
+        for (int a = 0; a < getAccountSlotsCount(); a++) {
             if (AccountInstance.getInstance(a).getUserConfig().isClientActivated()) {
                 hasActivated = true;
                 break;
@@ -586,7 +615,7 @@ public class UserConfig extends BaseController {
 
     public static ArrayList<Long> getLoggedInAccountIds() {
         ArrayList<Long> ids = new ArrayList<>();
-        for (int account = 0; account < UserConfig.MAX_ACCOUNT_COUNT; account++) {
+        for (int account = 0; account < UserConfig.getAccountSlotsCount(); account++) {
             UserConfig config = UserConfig.getInstance(account);
             if (config.isClientActivated()) {
                 ids.add(config.getClientUserId());
@@ -631,7 +660,7 @@ public class UserConfig extends BaseController {
     }
 
     public static int getProductionAccount() {
-        for (int i = -1; i < MAX_ACCOUNT_COUNT; ++i) {
+        for (int i = -1; i < getAccountSlotsCount(); ++i) {
             final int account = i < 0 ? selectedAccount : i;
             if (getInstance(account).isClientActivated() && !ConnectionsManager.getInstance(account).isTestBackend())
                 return account;

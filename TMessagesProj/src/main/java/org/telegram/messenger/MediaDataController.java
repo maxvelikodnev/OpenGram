@@ -134,23 +134,23 @@ public class MediaDataController extends BaseController {
 
     public static String SHORTCUT_CATEGORY = "org.telegram.messenger.SHORTCUT_SHARE";
 
-    private static volatile MediaDataController[] Instance = new MediaDataController[UserConfig.MAX_ACCOUNT_COUNT];
-    private static final Object[] lockObjects = new Object[UserConfig.MAX_ACCOUNT_COUNT];
+    private static volatile org.telegram.messenger.AccountStore<MediaDataController> Instance = new org.telegram.messenger.AccountStore<>();
+    private static final org.telegram.messenger.AccountStore<Object> lockObjects = new org.telegram.messenger.AccountStore<>(Object::new);
 
     static {
-        for (int i = 0; i < UserConfig.MAX_ACCOUNT_COUNT; i++) {
-            lockObjects[i] = new Object();
+        for (int i = 0; i < UserConfig.getAccountSlotsCount(); i++) {
+            lockObjects.set(i, new Object());
         }
     }
 
 
     public static MediaDataController getInstance(int num) {
-        MediaDataController localInstance = Instance[num];
+        MediaDataController localInstance = Instance.get(num);
         if (localInstance == null) {
             synchronized (lockObjects) {
-                localInstance = Instance[num];
+                localInstance = Instance.get(num);
                 if (localInstance == null) {
-                    Instance[num] = localInstance = new MediaDataController(num);
+                    Instance.set(num, localInstance = new MediaDataController(num));
                 }
             }
         }

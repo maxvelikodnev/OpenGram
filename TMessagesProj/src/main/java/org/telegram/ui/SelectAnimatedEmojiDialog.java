@@ -3674,13 +3674,13 @@ public class SelectAnimatedEmojiDialog extends FrameLayout implements Notificati
         }
     }
 
-    private static boolean[] preloaded = new boolean[UserConfig.MAX_ACCOUNT_COUNT];
+    private static org.telegram.messenger.AccountStore<Boolean> preloaded = new org.telegram.messenger.AccountStore<>(() -> false);
 
     public static void preload(int account) {
-        if (preloaded[account] || MediaDataController.getInstance(account) == null) {
+        if (preloaded.get(account) || MediaDataController.getInstance(account) == null) {
             return;
         }
-        preloaded[account] = true;
+        preloaded.set(account, true);
         MediaDataController.getInstance(account).checkStickers(MediaDataController.TYPE_EMOJIPACKS);
         MediaDataController.getInstance(account).fetchEmojiStatuses(0, true);
         MediaDataController.getInstance(account).checkReactions();

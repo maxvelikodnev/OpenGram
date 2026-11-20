@@ -650,7 +650,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     private String addToGroupAlertString;
     public boolean resetDelegate = true;
 
-    public static boolean[] dialogsLoaded = new boolean[UserConfig.MAX_ACCOUNT_COUNT];
+    public static org.telegram.messenger.AccountStore<Boolean> dialogsLoaded = new org.telegram.messenger.AccountStore<>(() -> false);
     private boolean searching;
     private boolean searchWas;
     private boolean onlySelect;
@@ -2905,7 +2905,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
 
     public static void loadDialogs(AccountInstance accountInstance) {
         int currentAccount = accountInstance.getCurrentAccount();
-        if (!dialogsLoaded[currentAccount]) {
+        if (!dialogsLoaded.get(currentAccount)) {
             MessagesController messagesController = accountInstance.getMessagesController();
             messagesController.loadGlobalNotificationsSettings();
             messagesController.loadDialogs(0, 0, 100, true);
@@ -2917,7 +2917,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             for (String emoji : messagesController.diceEmojies) {
                 accountInstance.getMediaDataController().loadStickersByEmojiOrName(emoji, true, true);
             }
-            dialogsLoaded[currentAccount] = true;
+            dialogsLoaded.set(currentAccount, true);
         }
     }
 
@@ -10541,7 +10541,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             }
             updateStatus(UserConfig.getInstance(account).getCurrentUser(), true);
         } else if (id == NotificationCenter.appDidLogout) {
-            dialogsLoaded[currentAccount] = false;
+            dialogsLoaded.set(currentAccount, false);
         } else if (id == NotificationCenter.encryptedChatUpdated) {
             updateVisibleRows(0);
         } else if (id == NotificationCenter.contactsDidLoad) {
@@ -10754,7 +10754,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             updateStatus(UserConfig.getInstance(account).getCurrentUser(), true);
             updateStoriesPosting();
         } else if (id == NotificationCenter.onDatabaseReset) {
-            dialogsLoaded[currentAccount] = false;
+            dialogsLoaded.set(currentAccount, false);
             loadDialogs(getAccountInstance());
             getMessagesController().loadPinnedDialogs(folderId, 0, null);
         } else if (id == NotificationCenter.chatlistFolderUpdate) {
@@ -14034,7 +14034,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         final ArrayList<Integer> accountNumbers = new ArrayList<>();
 
         accountNumbers.clear();
-        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+        for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
             if (UserConfig.getInstance(a).isClientActivated()) {
                 accountNumbers.add(a);
             }

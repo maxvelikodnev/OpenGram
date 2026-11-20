@@ -125,12 +125,12 @@ public class StarsController {
     public static final int PERIOD_MINUTE = 60;
     public static final int PERIOD_5MINUTES = 300;
 
-    private static volatile StarsController[][] Instance = new StarsController[2][UserConfig.MAX_ACCOUNT_COUNT];
-    private static final Object[][] lockObjects = new Object[2][UserConfig.MAX_ACCOUNT_COUNT];
+    private static volatile org.telegram.messenger.AccountStore<StarsController>[] Instance = new org.telegram.messenger.AccountStore[]{new org.telegram.messenger.AccountStore<>(), new org.telegram.messenger.AccountStore<>()};
+    private static final org.telegram.messenger.AccountStore<Object>[] lockObjects = new org.telegram.messenger.AccountStore[]{new org.telegram.messenger.AccountStore<>(Object::new), new org.telegram.messenger.AccountStore<>(Object::new)};
     static {
         for (int a = 0; a < 2; ++a) {
-            for (int i = 0; i < UserConfig.MAX_ACCOUNT_COUNT; i++) {
-                lockObjects[a][i] = new Object();
+            for (int i = 0; i < UserConfig.getAccountSlotsCount(); i++) {
+                lockObjects[a].set(i, new Object());
             }
         }
     }
@@ -148,12 +148,12 @@ public class StarsController {
     }
 
     public static StarsController getInstance(int num, boolean ton) {
-        StarsController localInstance = Instance[ton ? 1 : 0][num];
+        StarsController localInstance = Instance[ton ? 1 : 0].get(num);
         if (localInstance == null) {
-            synchronized (lockObjects[ton ? 1 : 0][num]) {
-                localInstance = Instance[ton ? 1 : 0][num];
+            synchronized (lockObjects[ton ? 1 : 0].get(num)) {
+                localInstance = Instance[ton ? 1 : 0].get(num);
                 if (localInstance == null) {
-                    Instance[ton ? 1 : 0][num] = localInstance = new StarsController(num, ton);
+                    Instance[ton ? 1 : 0].set(num, localInstance = new StarsController(num, ton));
                 }
             }
         }

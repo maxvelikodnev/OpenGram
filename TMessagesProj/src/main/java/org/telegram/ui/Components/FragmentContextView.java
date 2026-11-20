@@ -720,7 +720,7 @@ public class FragmentContextView extends FrameLayout implements NotificationCent
                 }
                 builder.setPositiveButton(getString(R.string.Stop), (dialogInterface, i) -> {
                     if (fragment instanceof DialogsActivity) {
-                        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+                        for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
                             LocationController.getInstance(a).removeAllLocationSharings();
                         }
                     } else {
@@ -804,7 +804,7 @@ public class FragmentContextView extends FrameLayout implements NotificationCent
                     did = chatActivity.getDialogId();
                     account = fragment.getCurrentAccount();
                 } else if (LocationController.getLocationsCount() == 1) {
-                    for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+                    for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
                         ArrayList<LocationController.SharingLocationInfo> arrayList = LocationController.getInstance(a).sharingLocationsUI;
                         if (!arrayList.isEmpty()) {
                             LocationController.SharingLocationInfo info = LocationController.getInstance(a).sharingLocationsUI.get(0);
@@ -1421,7 +1421,7 @@ public class FragmentContextView extends FrameLayout implements NotificationCent
 
         removeObservers();
         if (!isLocation) {
-            for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+            for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
                 GroupCallMessagesController.getInstance(a).unsubscribeFromCallMessages(0, this);
             }
         }
@@ -1436,7 +1436,7 @@ public class FragmentContextView extends FrameLayout implements NotificationCent
         wasDraw = false;
     }
 
-    private final NotificationCenter.ObserversGroup[] observersGroup = new NotificationCenter.ObserversGroup[UserConfig.MAX_ACCOUNT_COUNT];
+    private final org.telegram.messenger.AccountStore<NotificationCenter.ObserversGroup> observersGroup = new org.telegram.messenger.AccountStore<>();
     private NotificationCenter.ObserversGroup globalObserversGroup;
 
     private void removeObservers() {
@@ -1444,10 +1444,10 @@ public class FragmentContextView extends FrameLayout implements NotificationCent
             globalObserversGroup.removeAllObservers();
             globalObserversGroup = null;
         }
-        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
-            if (observersGroup[a] != null) {
-                observersGroup[a].removeAllObservers();
-                observersGroup[a] = null;
+        for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
+            if (observersGroup.get(a) != null) {
+                observersGroup.get(a).removeAllObservers();
+                observersGroup.set(a, null);
             }
         }
     }
@@ -1465,8 +1465,8 @@ public class FragmentContextView extends FrameLayout implements NotificationCent
                 .add(NotificationCenter.liveLocationsCacheChanged);
             checkLiveLocation(true);
         } else {
-            for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
-                observersGroup[a] = NotificationCenter.getInstance(a)
+            for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
+                observersGroup.set(a, NotificationCenter.getInstance(a)
                     .createObserversGroup(this)
                     .add(NotificationCenter.messagePlayingDidReset)
                     .add(NotificationCenter.messagePlayingPlayStateChanged)
@@ -1475,7 +1475,7 @@ public class FragmentContextView extends FrameLayout implements NotificationCent
                     .add(NotificationCenter.groupCallTypingsUpdated)
                     .add(NotificationCenter.historyImportProgressChanged)
                     .add(NotificationCenter.liveStoryUpdated)
-                    .add(NotificationCenter.messagePlayingProgressDidChanged);
+                    .add(NotificationCenter.messagePlayingProgressDidChanged));
                 GroupCallMessagesController.getInstance(a).subscribeToCallMessages(0, this);
             }
 
@@ -1717,7 +1717,7 @@ public class FragmentContextView extends FrameLayout implements NotificationCent
                 String param;
                 String str;
                 ArrayList<LocationController.SharingLocationInfo> infos = new ArrayList<>();
-                for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+                for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
                     infos.addAll(LocationController.getInstance(a).sharingLocationsUI);
                 }
                 if (infos.size() == 1) {

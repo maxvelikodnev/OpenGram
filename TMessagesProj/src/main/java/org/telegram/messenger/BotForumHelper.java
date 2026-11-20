@@ -654,14 +654,14 @@ public class BotForumHelper extends BaseController {
         preferences = ApplicationLoader.applicationContext.getSharedPreferences("bot_drafts" + currentAccount, Activity.MODE_PRIVATE);
     }
 
-    private static volatile BotForumHelper[] Instance = new BotForumHelper[UserConfig.MAX_ACCOUNT_COUNT];
+    private static volatile org.telegram.messenger.AccountStore<BotForumHelper> Instance = new org.telegram.messenger.AccountStore<>();
     public static BotForumHelper getInstance(final int num) {
-        BotForumHelper localInstance = Instance[num];
+        BotForumHelper localInstance = Instance.get(num);
         if (localInstance == null) {
             synchronized (BotForumHelper.class) {
-                localInstance = Instance[num];
+                localInstance = Instance.get(num);
                 if (localInstance == null) {
-                    Instance[num] = localInstance = new BotForumHelper(num);
+                    Instance.set(num, localInstance = new BotForumHelper(num));
                 }
             }
         }

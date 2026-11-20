@@ -321,7 +321,7 @@ public final class WidgetSandboxSession {
      * widgets off. No native session is created then, so no widget code runs in the client. Any thread.
      */
     public static boolean disabledByConfig() {
-        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+        for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
             if (UserConfig.getInstance(a).isClientActivated() && AppGlobalConfig.getInstance(a).widgetsDisabled.get()) {
                 return true;
             }

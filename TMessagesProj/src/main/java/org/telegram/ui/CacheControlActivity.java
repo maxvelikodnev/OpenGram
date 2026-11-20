@@ -621,7 +621,7 @@ public class CacheControlActivity extends BaseFragment implements NotificationCe
                     cacheModel.add(addToType, fileInfo);
                 }
                 //TODO measure for other accounts
-//                for (int i = 0; i < UserConfig.MAX_ACCOUNT_COUNT; i++) {
+//                for (int i = 0; i < UserConfig.getAccountSlotsCount(); i++) {
 //                    if (i != currentAccount && UserConfig.getInstance(currentAccount).isClientActivated()) {
 //                        FileLoader.getInstance(currentAccount).getFileDatabase().getFileDialogId(fileEntry);
 //                    }

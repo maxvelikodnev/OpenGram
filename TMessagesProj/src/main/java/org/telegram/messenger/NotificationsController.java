@@ -179,21 +179,21 @@ public class NotificationsController extends BaseController implements Notificat
         audioManager = (AudioManager) ApplicationLoader.applicationContext.getSystemService(Context.AUDIO_SERVICE);
     }
 
-    private static volatile NotificationsController[] Instance = new NotificationsController[UserConfig.MAX_ACCOUNT_COUNT];
-    private static final Object[] lockObjects = new Object[UserConfig.MAX_ACCOUNT_COUNT];
+    private static volatile org.telegram.messenger.AccountStore<NotificationsController> Instance = new org.telegram.messenger.AccountStore<>();
+    private static final org.telegram.messenger.AccountStore<Object> lockObjects = new org.telegram.messenger.AccountStore<>(Object::new);
     static {
-        for (int i = 0; i < UserConfig.MAX_ACCOUNT_COUNT; i++) {
-            lockObjects[i] = new Object();
+        for (int i = 0; i < UserConfig.getAccountSlotsCount(); i++) {
+            lockObjects.set(i, new Object());
         }
     }
 
     public static NotificationsController getInstance(int num) {
-        NotificationsController localInstance = Instance[num];
+        NotificationsController localInstance = Instance.get(num);
         if (localInstance == null) {
-            synchronized (lockObjects[num]) {
-                localInstance = Instance[num];
+            synchronized (lockObjects.get(num)) {
+                localInstance = Instance.get(num);
                 if (localInstance == null) {
-                    Instance[num] = localInstance = new NotificationsController(num);
+                    Instance.set(num, localInstance = new NotificationsController(num));
                 }
             }
         }
@@ -1786,7 +1786,7 @@ public class NotificationsController extends BaseController implements Notificat
 
     private int getTotalAllUnreadCount() {
         int count = 0;
-        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+        for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
             if (!UserConfig.getInstance(a).isClientActivated()) {
                 continue;
             }

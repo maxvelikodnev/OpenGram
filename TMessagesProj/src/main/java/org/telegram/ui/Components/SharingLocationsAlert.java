@@ -183,7 +183,7 @@ public class SharingLocationsAlert extends BottomSheet implements NotificationCe
         ThemeBind.textColor(pickerBottomLayout.cancelButton, Theme.key_text_RedBold, resourcesProvider);
         pickerBottomLayout.cancelButton.setText(LocaleController.getString(R.string.StopAllLocationSharings));
         pickerBottomLayout.cancelButton.setOnClickListener(view -> {
-            for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+            for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
                 LocationController.getInstance(a).removeAllLocationSharings();
             }
             dismiss();
@@ -231,7 +231,7 @@ public class SharingLocationsAlert extends BottomSheet implements NotificationCe
     }
 
     private LocationController.SharingLocationInfo getLocation(int position) {
-        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+        for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
             ArrayList<LocationController.SharingLocationInfo> infos = LocationController.getInstance(a).sharingLocationsUI;
             if (position >= infos.size()) {
                 position -= infos.size();

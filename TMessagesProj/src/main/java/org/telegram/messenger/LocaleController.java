@@ -3597,7 +3597,7 @@ public class LocaleController {
                     }), ConnectionsManager.RequestFlagWithoutLogin);
                     request.token = requestId;
                 } else {
-                    for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+                    for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
                         ConnectionsManager.setLangCode(localeInfo.getLangCode());
                     }
                     FileLog.d("applyRemoteLanguage getLangPack");

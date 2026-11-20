@@ -118,15 +118,15 @@ public class StatsController extends BaseController {
         }
     };
 
-    private static volatile StatsController[] Instance = new StatsController[UserConfig.MAX_ACCOUNT_COUNT];
+    private static volatile org.telegram.messenger.AccountStore<StatsController> Instance = new org.telegram.messenger.AccountStore<>();
 
     public static StatsController getInstance(int num) {
-        StatsController localInstance = Instance[num];
+        StatsController localInstance = Instance.get(num);
         if (localInstance == null) {
             synchronized (StatsController.class) {
-                localInstance = Instance[num];
+                localInstance = Instance.get(num);
                 if (localInstance == null) {
-                    Instance[num] = localInstance = new StatsController(num);
+                    Instance.set(num, localInstance = new StatsController(num));
                 }
             }
         }

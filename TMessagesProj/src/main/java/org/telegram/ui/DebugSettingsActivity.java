@@ -440,7 +440,7 @@ public class DebugSettingsActivity extends UniversalFragment {
                 break;
             case ID_CLEAR_WIDGET_HEIGHTS:
                 // Chats opened after this lay their widgets out as on first sight.
-                for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+                for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
                     if (UserConfig.getInstance(a).isClientActivated()) MessagesStorage.getInstance(a).clearWidgetHeights();
                 }
                 BulletinFactory.of(this).createSimpleBulletin(R.raw.done, "Widget heights cleared").show();

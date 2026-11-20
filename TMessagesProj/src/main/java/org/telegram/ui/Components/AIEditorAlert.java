@@ -1815,7 +1815,7 @@ public class AIEditorAlert extends BottomSheetWithRecyclerListView implements No
 
                 int accountForEmoji = currentAccount;
                 if (ConnectionsManager.getInstance(accountForEmoji).isTestBackend()) {
-                    for (int i = 0; i < UserConfig.MAX_ACCOUNT_COUNT; ++i) {
+                    for (int i = 0; i < UserConfig.getAccountSlotsCount(); ++i) {
                         if (UserConfig.getInstance(i).isClientActivated() && !ConnectionsManager.getInstance(i).isTestBackend()) {
                             accountForEmoji = i;
                             break;

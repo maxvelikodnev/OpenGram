@@ -1,0 +1,88 @@
+// Secrets belong in the ignored local.properties, never in BuildVars.java.
+def local = new Properties()
+def localFile = rootProject.file('local.properties')
+if (localFile.exists()) {
+    localFile.withInputStream { local.load(it) }
+}
+ext.opengramLocal = local
+ext.opengramApiId = local.getProperty('TELEGRAM_API_ID', '0')
+ext.opengramApiHash = local.getProperty('TELEGRAM_API_HASH', '')
+
+tasks.register('validateOpenGram') {
+    doLast {
+        if (!(opengramApiId ==~ /[1-9][0-9]*/) || !(opengramApiHash ==~ /[a-fA-F0-9]{32}/)) {
+            throw new GradleException('Set TELEGRAM_API_ID and TELEGRAM_API_HASH in local.properties.')
+        }
+        def config = rootProject.file('TMessagesProj_App/src/release/google-services.json')
+        if (!config.exists()) {
+            throw new GradleException('Missing OpenGram release google-services.json.')
+        }
+        def firebase = new groovy.json.JsonSlurper().parse(config)
+        if (!firebase.client.any { it.client_info.android_client_info.package_name == APP_PACKAGE }) {
+            throw new GradleException('Firebase package does not match APP_PACKAGE.')
+        }
+        if (!rootProject.file(local.getProperty('OPENGRAM_KEYSTORE', 'missing')).exists()) {
+            throw new GradleException('Missing local OpenGram signing keystore.')
+        }
+        def keystore = java.security.KeyStore.getInstance('PKCS12')
+        rootProject.file(local.getProperty('OPENGRAM_KEYSTORE')).withInputStream {
+            keystore.load(it, local.getProperty('OPENGRAM_STORE_PASSWORD').toCharArray())
+        }
+        if (!keystore.isKeyEntry(local.getProperty('OPENGRAM_KEY_ALIAS'))) {
+            throw new GradleException('OpenGram signing alias is missing.')
+        }
+        println 'OpenGram API, Firebase package and signing configuration are present.'
+    }
+}
+
+// Resolve dependencies and validate the Android/native build configuration.
+// This deliberately stops before compiling or packaging the APK.
+tasks.register('prepareOpenGram') {
+    dependsOn 'validateOpenGram',
+        ':TMessagesProj_App:processAfatReleaseGoogleServices',
+        ':TMessagesProj_App:processAfatReleaseMainManifest',
+        ':TMessagesProj_App:processAfatReleaseResources',
+        ':TMessagesProj:generateReleaseBuildConfig',
+        ':TMessagesProj:configureCMakeRelWithDebInfo'
+    doLast {
+        [project(':TMessagesProj'), project(':TMessagesProj_App')].each { module ->
+            ['releaseCompileClasspath', 'releaseRuntimeClasspath',
+             'afatReleaseCompileClasspath', 'afatReleaseRuntimeClasspath'].each { name ->
+                def config = module.configurations.findByName(name)
+                if (config != null && config.canBeResolved) {
+                    def externalFiles = config.incoming.artifactView {
+                        componentFilter { it instanceof org.gradle.api.artifacts.component.ModuleComponentIdentifier }
+                        attributes {
+                            attribute(org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE,
+                                'android-classes-jar')
+                        }
+                    }.files.files
+                    println "Resolved ${module.path}:$name (${externalFiles.size()} external artifacts)"
+                }
+            }
+        }
+        println 'OpenGram is prepared. Compile with: ./scripts/opengram.sh apk'
+    }
+}
+
+subprojects {
+    plugins.withId('com.android.application') {
+        if (project.name == 'TMessagesProj_App') {
+            android {
+                defaultConfig {
+                    manifestPlaceholders.opengramMapsKey = local.getProperty('OPENGRAM_MAPS_API_KEY', '')
+                }
+                signingConfigs {
+                    opengram {
+                        storeFile rootProject.file(local.getProperty('OPENGRAM_KEYSTORE', '../opengram-signing.p12'))
+                        storePassword local.getProperty('OPENGRAM_STORE_PASSWORD', '')
+                        keyAlias local.getProperty('OPENGRAM_KEY_ALIAS', 'opengram')
+                        keyPassword local.getProperty('OPENGRAM_KEY_PASSWORD', '')
+                        storeType 'PKCS12'
+                    }
+                }
+            }
+            tasks.named('preBuild').configure { dependsOn rootProject.tasks.named('validateOpenGram') }
+        }
+    }
+}

@@ -12,20 +12,20 @@ import java.util.ArrayList;
 
 public class BusinessChatbotController {
 
-    private static volatile BusinessChatbotController[] Instance = new BusinessChatbotController[UserConfig.MAX_ACCOUNT_COUNT];
-    private static final Object[] lockObjects = new Object[UserConfig.MAX_ACCOUNT_COUNT];
+    private static volatile org.telegram.messenger.AccountStore<BusinessChatbotController> Instance = new org.telegram.messenger.AccountStore<>();
+    private static final org.telegram.messenger.AccountStore<Object> lockObjects = new org.telegram.messenger.AccountStore<>(Object::new);
     static {
-        for (int i = 0; i < UserConfig.MAX_ACCOUNT_COUNT; i++) {
-            lockObjects[i] = new Object();
+        for (int i = 0; i < UserConfig.getAccountSlotsCount(); i++) {
+            lockObjects.set(i, new Object());
         }
     }
     public static BusinessChatbotController getInstance(int num) {
-        BusinessChatbotController localInstance = Instance[num];
+        BusinessChatbotController localInstance = Instance.get(num);
         if (localInstance == null) {
-            synchronized (lockObjects[num]) {
-                localInstance = Instance[num];
+            synchronized (lockObjects.get(num)) {
+                localInstance = Instance.get(num);
                 if (localInstance == null) {
-                    Instance[num] = localInstance = new BusinessChatbotController(num);
+                    Instance.set(num, localInstance = new BusinessChatbotController(num));
                 }
             }
         }

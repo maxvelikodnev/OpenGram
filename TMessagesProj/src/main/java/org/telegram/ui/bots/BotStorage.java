@@ -303,7 +303,7 @@ public class BotStorage {
         boolean can_restore = false;
         if (secured && value == null && !thisJSON.keys().hasNext()) {
             final HashSet<Long> activeUsers = new HashSet<>();
-            for (int i = 0; i < UserConfig.MAX_ACCOUNT_COUNT; ++i) {
+            for (int i = 0; i < UserConfig.getAccountSlotsCount(); ++i) {
                 final UserConfig userConfig = UserConfig.getInstance(i);
                 if (userConfig.isClientActivated()) {
                     activeUsers.add(userConfig.getClientUserId());
@@ -343,7 +343,7 @@ public class BotStorage {
         final ArrayList<StorageConfig> result = new ArrayList<>();
 
         final HashSet<Long> activeUsers = new HashSet<>();
-        for (int i = 0; i < UserConfig.MAX_ACCOUNT_COUNT; ++i) {
+        for (int i = 0; i < UserConfig.getAccountSlotsCount(); ++i) {
             final UserConfig userConfig = UserConfig.getInstance(i);
             if (userConfig.isClientActivated()) {
                 activeUsers.add(userConfig.getClientUserId());
@@ -380,7 +380,7 @@ public class BotStorage {
         }
 
         final HashSet<Long> activeUsers = new HashSet<>();
-        for (int i = 0; i < UserConfig.MAX_ACCOUNT_COUNT; ++i) {
+        for (int i = 0; i < UserConfig.getAccountSlotsCount(); ++i) {
             final UserConfig userConfig = UserConfig.getInstance(i);
             if (userConfig.isClientActivated()) {
                 activeUsers.add(userConfig.getClientUserId());

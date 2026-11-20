@@ -472,14 +472,14 @@ public class EphemeralMessagesHelper extends BaseController {
         super(currentAccount);
     }
 
-    private static volatile EphemeralMessagesHelper[] Instance = new EphemeralMessagesHelper[UserConfig.MAX_ACCOUNT_COUNT];
+    private static volatile org.telegram.messenger.AccountStore<EphemeralMessagesHelper> Instance = new org.telegram.messenger.AccountStore<>();
     public static EphemeralMessagesHelper getInstance(final int num) {
-        EphemeralMessagesHelper localInstance = Instance[num];
+        EphemeralMessagesHelper localInstance = Instance.get(num);
         if (localInstance == null) {
             synchronized (EphemeralMessagesHelper.class) {
-                localInstance = Instance[num];
+                localInstance = Instance.get(num);
                 if (localInstance == null) {
-                    Instance[num] = localInstance = new EphemeralMessagesHelper(num);
+                    Instance.set(num, localInstance = new EphemeralMessagesHelper(num));
                 }
             }
         }

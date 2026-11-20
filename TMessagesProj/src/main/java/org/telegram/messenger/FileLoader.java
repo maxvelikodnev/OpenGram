@@ -228,15 +228,15 @@ public class FileLoader extends BaseController {
     private int lastReferenceId;
     private final ConcurrentHashMap<Integer, Object> parentObjectReferences = new ConcurrentHashMap<>();
 
-    private static final FileLoader[] Instance = new FileLoader[UserConfig.MAX_ACCOUNT_COUNT];
+    private static final org.telegram.messenger.AccountStore<FileLoader> Instance = new org.telegram.messenger.AccountStore<>();
 
     public static FileLoader getInstance(int num) {
-        FileLoader localInstance = Instance[num];
+        FileLoader localInstance = Instance.get(num);
         if (localInstance == null) {
             synchronized (FileLoader.class) {
-                localInstance = Instance[num];
+                localInstance = Instance.get(num);
                 if (localInstance == null) {
-                    Instance[num] = localInstance = new FileLoader(num);
+                    Instance.set(num, localInstance = new FileLoader(num));
                 }
             }
         }

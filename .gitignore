@@ -8,6 +8,13 @@ TMessagesProj/.cxx/
 TMessagesProj/jniLibs/
 TMessagesProj/jniRes/
 **/.DS_Store
+.gradle-home/
+**/src/release/google-services.json
+*.local.properties
+*.p12
+*.jks
+*.keystore
+*service-account*.json
 TMessagesProj/afat/
 TMessagesProj_App/afat/
 TMessagesProj_AppHockeyApp/afat/

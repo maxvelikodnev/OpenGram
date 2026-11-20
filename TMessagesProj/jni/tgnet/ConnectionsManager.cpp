@@ -20,6 +20,7 @@
 #include <string>
 #include <cinttypes>
 #include "ConnectionsManager.h"
+#include "AccountInstanceRegistry.h"
 #include "DownloadRequestBudget.h"
 #include "FileLog.h"
 #include "EventObject.h"
@@ -38,7 +39,7 @@
 #ifdef ANDROID
 #include <jni.h>
 JavaVM *javaVm = nullptr;
-JNIEnv *jniEnv[MAX_ACCOUNT_COUNT];
+thread_local JNIEnv *jniEnv = nullptr;
 jclass jclass_ByteBuffer = nullptr;
 jmethodID jclass_ByteBuffer_allocateDirect = nullptr;
 #endif
@@ -138,24 +139,8 @@ ConnectionsManager::~ConnectionsManager() {
 }
 
 ConnectionsManager& ConnectionsManager::getInstance(int32_t instanceNum) {
-    switch (instanceNum) {
-        case 0:
-            static ConnectionsManager instance0(0);
-            return instance0;
-        case 1:
-            static ConnectionsManager instance1(1);
-            return instance1;
-        case 2:
-            static ConnectionsManager instance2(2);
-            return instance2;
-        case 3:
-            static ConnectionsManager instance3(3);
-            return instance3;
-        case 4:
-        default:
-            static ConnectionsManager instance4(4);
-            return instance4;
-    }
+    static AccountInstanceRegistry<ConnectionsManager> instances;
+    return instances.get(instanceNum);
 }
 
 int ConnectionsManager::callEvents(int64_t now) {
@@ -348,7 +333,7 @@ void *ConnectionsManager::ThreadProc(void *data) {
     if (LOGS_ENABLED) DEBUG_D("network thread started");
     auto networkManager = (ConnectionsManager *) (data);
 #ifdef ANDROID
-    javaVm->AttachCurrentThread(&jniEnv[networkManager->instanceNum], nullptr);
+    javaVm->AttachCurrentThread(&jniEnv, nullptr);
 #endif
     if (networkManager->currentUserId != 0 && networkManager->pushConnectionEnabled) {
         Datacenter *datacenter = networkManager->getDatacenterWithId(networkManager->currentDatacenterId);

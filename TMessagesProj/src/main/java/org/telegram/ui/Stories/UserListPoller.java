@@ -22,7 +22,7 @@ import java.util.ArrayList;
 
 public class UserListPoller {
 
-    private static UserListPoller[] istances = new UserListPoller[UserConfig.MAX_ACCOUNT_COUNT];
+    private static org.telegram.messenger.AccountStore<UserListPoller> istances = new org.telegram.messenger.AccountStore<>();
 
     final int currentAccount;
 
@@ -31,10 +31,10 @@ public class UserListPoller {
     }
 
     public static UserListPoller getInstance(int account) {
-        if (istances[account] == null) {
-            istances[account] = new UserListPoller(account);
+        if (istances.get(account) == null) {
+            istances.set(account, new UserListPoller(account));
         }
-        return istances[account];
+        return istances.get(account);
     }
 
     LongSparseLongArray userPollLastTime = new LongSparseLongArray();

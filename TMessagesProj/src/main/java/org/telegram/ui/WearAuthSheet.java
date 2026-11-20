@@ -218,7 +218,7 @@ public class WearAuthSheet {
         int nonTestAccount = UserConfig.selectedAccount;
         final ArrayList<Integer> accountNumbers = new ArrayList<>();
         accountNumbers.clear();
-        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+        for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
             if (UserConfig.getInstance(a).isClientActivated()) {
                 if (!ConnectionsManager.getInstance(a).isTestBackend()) {
                     nonTestAccount = a;

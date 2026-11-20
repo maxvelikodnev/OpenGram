@@ -18,21 +18,21 @@ import java.util.Set;
 
 public class BirthdayController {
 
-    private static volatile BirthdayController[] Instance = new BirthdayController[UserConfig.MAX_ACCOUNT_COUNT];
-    private static final Object[] lockObjects = new Object[UserConfig.MAX_ACCOUNT_COUNT];
+    private static volatile org.telegram.messenger.AccountStore<BirthdayController> Instance = new org.telegram.messenger.AccountStore<>();
+    private static final org.telegram.messenger.AccountStore<Object> lockObjects = new org.telegram.messenger.AccountStore<>(Object::new);
     static {
-        for (int i = 0; i < UserConfig.MAX_ACCOUNT_COUNT; i++) {
-            lockObjects[i] = new Object();
+        for (int i = 0; i < UserConfig.getAccountSlotsCount(); i++) {
+            lockObjects.set(i, new Object());
         }
     }
 
     public static BirthdayController getInstance(int num) {
-        BirthdayController localInstance = Instance[num];
+        BirthdayController localInstance = Instance.get(num);
         if (localInstance == null) {
-            synchronized (lockObjects[num]) {
-                localInstance = Instance[num];
+            synchronized (lockObjects.get(num)) {
+                localInstance = Instance.get(num);
                 if (localInstance == null) {
-                    Instance[num] = localInstance = new BirthdayController(num);
+                    Instance.set(num, localInstance = new BirthdayController(num));
                 }
             }
         }

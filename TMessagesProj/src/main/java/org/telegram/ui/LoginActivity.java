@@ -3086,7 +3086,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
             String phone = PhoneFormat.stripExceptNumbers("" + codeField.getText() + phoneField.getText());
             if (activityMode == MODE_LOGIN) {
                 if (getParentActivity() instanceof LaunchActivity) {
-                    for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+                    for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
                         UserConfig userConfig = UserConfig.getInstance(a);
                         if (!userConfig.isClientActivated()) {
                             continue;
@@ -3635,7 +3635,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                     return;
                 }
                 if (userId != 0 && getParentActivity() instanceof LaunchActivity) {
-                    for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+                    for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
                         UserConfig userConfig = UserConfig.getInstance(a);
                         if (!userConfig.isClientActivated()) {
                             continue;

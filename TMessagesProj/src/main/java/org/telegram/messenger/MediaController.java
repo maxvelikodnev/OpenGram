@@ -1579,7 +1579,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
         fileBuffer = ByteBuffer.allocateDirect(1920);
 
         AndroidUtilities.runOnUIThread(() -> {
-            for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+            for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
                 NotificationCenter.getInstance(a).addObserver(MediaController.this, NotificationCenter.fileLoaded);
                 NotificationCenter.getInstance(a).addObserver(MediaController.this, NotificationCenter.httpFileDidLoad);
                 NotificationCenter.getInstance(a).addObserver(MediaController.this, NotificationCenter.didReceiveNewMessages);
@@ -1764,7 +1764,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
         cleanupPlayer(true, true);
         audioInfo = null;
         playMusicAgain = false;
-        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+        for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
             DownloadController.getInstance(a).cleanup();
         }
         videoConvertQueue.clear();

@@ -145,6 +145,8 @@ android {
     }
 
     defaultConfig {
+        buildConfigField 'int', 'TELEGRAM_API_ID', rootProject.opengramApiId
+        buildConfigField 'String', 'TELEGRAM_API_HASH', '"' + rootProject.opengramApiHash + '"'
         minSdkVersion 23
         targetSdkVersion 36
 

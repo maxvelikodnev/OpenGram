@@ -8,14 +8,14 @@ import org.telegram.ui.Components.Paint.PersistColorPalette;
 public class AccountInstance {
 
     private int currentAccount;
-    private static volatile AccountInstance[] Instance = new AccountInstance[UserConfig.MAX_ACCOUNT_COUNT];
+    private static volatile org.telegram.messenger.AccountStore<AccountInstance> Instance = new org.telegram.messenger.AccountStore<>();
     public static AccountInstance getInstance(int num) {
-        AccountInstance localInstance = Instance[num];
+        AccountInstance localInstance = Instance.get(num);
         if (localInstance == null) {
             synchronized (AccountInstance.class) {
-                localInstance = Instance[num];
+                localInstance = Instance.get(num);
                 if (localInstance == null) {
-                    Instance[num] = localInstance = new AccountInstance(num);
+                    Instance.set(num, localInstance = new AccountInstance(num));
                 }
             }
         }

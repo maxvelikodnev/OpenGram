@@ -1,0 +1,7 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="app.opengram.android.accounttests">
+    <uses-sdk android:minSdkVersion="23" android:targetSdkVersion="36" />
+    <application android:label="OpenGram account verification" android:testOnly="true" />
+    <instrumentation android:name="app.opengram.accounttests.AccountInstrumentation"
+        android:targetPackage="app.opengram.android" />
+</manifest>

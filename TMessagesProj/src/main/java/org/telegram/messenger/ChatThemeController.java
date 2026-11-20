@@ -239,16 +239,16 @@ public class ChatThemeController extends BaseController {
     }
 
 
-    private static final ChatThemeController[] instances = new ChatThemeController[UserConfig.MAX_ACCOUNT_COUNT];
+    private static final org.telegram.messenger.AccountStore<ChatThemeController> instances = new org.telegram.messenger.AccountStore<>();
 
     public static ChatThemeController getInstance(int accountNum) {
-        ChatThemeController local = instances[accountNum];
+        ChatThemeController local = instances.get(accountNum);
         if (local == null) {
             synchronized (ChatThemeController.class) {
-                local = instances[accountNum];
+                local = instances.get(accountNum);
                 if (local == null) {
                     local = new ChatThemeController(accountNum);
-                    instances[accountNum] = local;
+                    instances.set(accountNum, local);
                 }
             }
         }

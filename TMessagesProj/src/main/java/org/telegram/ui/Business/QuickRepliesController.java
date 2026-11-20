@@ -34,20 +34,20 @@ public class QuickRepliesController {
         return GREETING.equalsIgnoreCase(name) || AWAY.equalsIgnoreCase(name);
     }
 
-    private static volatile QuickRepliesController[] Instance = new QuickRepliesController[UserConfig.MAX_ACCOUNT_COUNT];
-    private static final Object[] lockObjects = new Object[UserConfig.MAX_ACCOUNT_COUNT];
+    private static volatile org.telegram.messenger.AccountStore<QuickRepliesController> Instance = new org.telegram.messenger.AccountStore<>();
+    private static final org.telegram.messenger.AccountStore<Object> lockObjects = new org.telegram.messenger.AccountStore<>(Object::new);
     static {
-        for (int i = 0; i < UserConfig.MAX_ACCOUNT_COUNT; i++) {
-            lockObjects[i] = new Object();
+        for (int i = 0; i < UserConfig.getAccountSlotsCount(); i++) {
+            lockObjects.set(i, new Object());
         }
     }
     public static QuickRepliesController getInstance(int num) {
-        QuickRepliesController localInstance = Instance[num];
+        QuickRepliesController localInstance = Instance.get(num);
         if (localInstance == null) {
-            synchronized (lockObjects[num]) {
-                localInstance = Instance[num];
+            synchronized (lockObjects.get(num)) {
+                localInstance = Instance.get(num);
                 if (localInstance == null) {
-                    Instance[num] = localInstance = new QuickRepliesController(num);
+                    Instance.set(num, localInstance = new QuickRepliesController(num));
                 }
             }
         }

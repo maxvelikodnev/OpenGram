@@ -102,14 +102,14 @@ public class BotGuardHelper extends BaseController {
 
 
 
-    private static volatile BotGuardHelper[] Instance = new BotGuardHelper[UserConfig.MAX_ACCOUNT_COUNT];
+    private static volatile org.telegram.messenger.AccountStore<BotGuardHelper> Instance = new org.telegram.messenger.AccountStore<>();
     public static BotGuardHelper getInstance(final int num) {
-        BotGuardHelper localInstance = Instance[num];
+        BotGuardHelper localInstance = Instance.get(num);
         if (localInstance == null) {
             synchronized (BotForumHelper.class) {
-                localInstance = Instance[num];
+                localInstance = Instance.get(num);
                 if (localInstance == null) {
-                    Instance[num] = localInstance = new BotGuardHelper(num);
+                    Instance.set(num, localInstance = new BotGuardHelper(num));
                 }
             }
         }

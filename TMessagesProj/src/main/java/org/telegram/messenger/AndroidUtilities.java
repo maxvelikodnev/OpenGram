@@ -3001,7 +3001,7 @@ public class AndroidUtilities {
     public static int getAccountInProduction() {
         if (UserConfig.getInstance(UserConfig.selectedAccount).isClientActivated() && !ConnectionsManager.getInstance(UserConfig.selectedAccount).isTestBackend())
             return UserConfig.selectedAccount;
-        for (int i = 0; i < UserConfig.MAX_ACCOUNT_COUNT; ++i) {
+        for (int i = 0; i < UserConfig.getAccountSlotsCount(); ++i) {
             if (UserConfig.getInstance(i).isClientActivated() && !ConnectionsManager.getInstance(i).isTestBackend())
                 return i;
         }

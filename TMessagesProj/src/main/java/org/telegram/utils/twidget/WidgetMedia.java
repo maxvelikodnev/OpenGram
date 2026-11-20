@@ -934,7 +934,7 @@ public final class WidgetMedia {
     }
 
     /** Accounts whose server has no query types yet (production until the scheme is rolled out): the old form at once. */
-    private static final boolean[] legacyQuery = new boolean[UserConfig.MAX_ACCOUNT_COUNT];
+    private static final org.telegram.messenger.AccountStore<Boolean> legacyQuery = new org.telegram.messenger.AccountStore<>(() -> false);
 
     /**
      * messages.getBotWidgetQueryAnswer with `type`; a server that does not know the method yet gets a plain data query
@@ -943,7 +943,7 @@ public final class WidgetMedia {
      */
     private static void sendQuery(Entry entry, TLRPC.WidgetQueryType type, byte[] data, int[] requestId, Utilities.Callback2<TLRPC.TL_messages_botWidgetQueryAnswer, TLRPC.TL_error> done) {
         final boolean plain = type instanceof TLRPC.TL_widgetQueryTypeData && !((TLRPC.TL_widgetQueryTypeData) type).with_wallet;
-        final boolean legacy = legacyQuery[entry.account];
+        final boolean legacy = legacyQuery.get(entry.account);
         if (legacy && !plain) {
             TLRPC.TL_error error = new TLRPC.TL_error();
             error.code = 400;
@@ -958,7 +958,7 @@ public final class WidgetMedia {
         req.data = data;
         requestId[0] = ConnectionsManager.getInstance(entry.account).sendRequestTyped(req, AndroidUtilities::runOnUIThread, (res, err) -> {
             if (!legacy && err != null && err.text != null && (err.text.startsWith("INPUT_METHOD_INVALID") || err.text.startsWith("INPUT_CONSTRUCTOR_INVALID"))) {
-                legacyQuery[entry.account] = true;
+                legacyQuery.set(entry.account, true);
                 sendQuery(entry, type, data, requestId, done);
                 return;
             }

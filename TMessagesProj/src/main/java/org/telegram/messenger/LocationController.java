@@ -77,15 +77,15 @@ public class LocationController extends BaseController implements NotificationCe
 
     private ILocationServiceProvider.ILocationRequest locationRequest;
 
-    private static volatile LocationController[] Instance = new LocationController[UserConfig.MAX_ACCOUNT_COUNT];
+    private static volatile org.telegram.messenger.AccountStore<LocationController> Instance = new org.telegram.messenger.AccountStore<>();
 
     public static LocationController getInstance(int num) {
-        LocationController localInstance = Instance[num];
+        LocationController localInstance = Instance.get(num);
         if (localInstance == null) {
             synchronized (LocationController.class) {
-                localInstance = Instance[num];
+                localInstance = Instance.get(num);
                 if (localInstance == null) {
-                    Instance[num] = localInstance = new LocationController(num);
+                    Instance.set(num, localInstance = new LocationController(num));
                 }
             }
         }
@@ -778,7 +778,7 @@ public class LocationController extends BaseController implements NotificationCe
     // startService fails silently in background (after a process restart or a service timeout), so the sharing
     // would stay in UI without updates and expiration checks; restart the service once the app is visible
     public static void onAppResumed() {
-        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+        for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
             if (!UserConfig.getInstance(a).isClientActivated()) {
                 continue;
             }
@@ -970,7 +970,7 @@ public class LocationController extends BaseController implements NotificationCe
 
     public static int getLocationsCount() {
         int count = 0;
-        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+        for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
             count += LocationController.getInstance(a).sharingLocationsUI.size();
         }
         return count;

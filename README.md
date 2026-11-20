@@ -1,5 +1,73 @@
 ## Telegram messenger for Android
 
+### OpenGram: personal Android build
+
+This personal fork is displayed as **Telegram+**, package `app.opengram.android`,
+with the original Telegram launcher icon. It remains an independent, unofficial
+client; the repository and local build tooling are named OpenGram.
+The prepared variant is `TMessagesProj_App:afatRelease`, a universal APK for
+**arm64-v8a, armeabi-v7a, x86 and x86_64**, running Android 6.0 or newer.
+It installs alongside official Telegram.
+
+Account storage is dynamic in both Java and the native networking layer.
+Adding an account does not require Premium and has no configured account-count
+cap. Existing slot IDs, preferences and database paths are preserved; empty
+slots are reused and newly allocated slots are persisted across restarts.
+Actual capacity depends on device memory, storage and background-process limits.
+Other Telegram Premium features and server-enforced limits are unchanged.
+
+Account-storage verification:
+
+```bash
+bash scripts/test-accounts.sh
+# After installing the release on an attached Android device:
+python3 scripts/test-accounts-device.py DEVICE_SERIAL
+```
+
+The device check uses a temporary signed instrumentation package to initialize
+independent JNI slots 64 and 65, without logging in additional users. It removes
+only its own temporary test package afterwards.
+
+From the repository directory:
+
+```bash
+# Validate settings, download dependencies, prepare resources and CMake.
+# This does not compile or package an APK.
+./scripts/opengram.sh prepare
+
+# When ready, compile and sign the APK.
+./scripts/opengram.sh apk
+```
+
+Expected APK: `TMessagesProj_App/build/outputs/apk/afat/release/app.apk`.
+
+The script uses Java 17 (Homebrew on this Mac), Gradle Wrapper 8.13 and an
+ignored `.gradle-home` directory. Set `OPENGRAM_JAVA_HOME` for a different Java
+17 installation. Android SDK 36, Build Tools 36.0.0, NDK 27.2.12479018 and
+CMake 3.22.1 and NASM must be installed. Configure `sdk.dir` in `local.properties`.
+
+Local-only files, already prepared on this Mac:
+
+- `local.properties`: Telegram API ID/hash, SDK path and signing passwords.
+- `TMessagesProj/src/release/google-services.json` and
+  `TMessagesProj_App/src/release/google-services.json`: OpenGram Firebase config.
+- `../opengram-signing.p12`: the dedicated APK signing key. Preserve this key
+  and its passwords so future APKs can update the installed app.
+- `../opengram-fcm-service-account.json`: server-side FCM private key, already
+  registered with Telegram. Never include it in the APK or the repository.
+
+Use `local.properties.example` when setting up a new machine. Local secrets,
+Firebase configuration and signing keys are excluded from Git. The actual
+Telegram API credentials are injected into generated BuildConfig during build;
+they are not stored in the committed source, but are necessarily part of the APK.
+
+Official-client-only passkeys and Firebase phone-number verification, Google
+Play Billing and official Telegram auto-updates are disabled. FCM messaging
+remains enabled. Embedded Google Maps needs your own optional
+`OPENGRAM_MAPS_API_KEY` in `local.properties`; no Telegram Maps key is used by
+the prepared variant. Notification delivery still needs a test on the phone
+after compiling and installing the APK.
+
 [Telegram](https://telegram.org) is a messaging app with a focus on speed and security. It’s superfast, simple and free.
 This repo contains the official source code for [Telegram App for Android](https://play.google.com/store/apps/details?id=org.telegram.messenger).
 

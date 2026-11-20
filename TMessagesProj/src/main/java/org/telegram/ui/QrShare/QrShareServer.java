@@ -503,13 +503,13 @@ final class QrShareServer implements NotificationCenter.NotificationCenterDelega
     private static final long LOCAL_THEME_HOLD = 10_000;
 
     @SuppressWarnings("unchecked")
-    private static final android.util.LongSparseArray<LocalTheme>[] localThemes = new android.util.LongSparseArray[UserConfig.MAX_ACCOUNT_COUNT];
+    private static final org.telegram.messenger.AccountStore<android.util.LongSparseArray<LocalTheme>> localThemes = new org.telegram.messenger.AccountStore<>();
 
     private static android.util.LongSparseArray<LocalTheme> localThemes(int account) {
-        if (localThemes[account] == null) {
-            localThemes[account] = new android.util.LongSparseArray<>();
+        if (localThemes.get(account) == null) {
+            localThemes.set(account, new android.util.LongSparseArray<>());
         }
-        return localThemes[account];
+        return localThemes.get(account);
     }
 
     private @Nullable TLRPC.ShareTheme loadedTheme;

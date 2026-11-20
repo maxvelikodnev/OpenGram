@@ -425,17 +425,17 @@ public class NotificationCenter {
 
     private int currentAccount;
     private int currentHeavyOperationFlags;
-    private static volatile NotificationCenter[] Instance = new NotificationCenter[UserConfig.MAX_ACCOUNT_COUNT];
+    private static volatile org.telegram.messenger.AccountStore<NotificationCenter> Instance = new org.telegram.messenger.AccountStore<>();
     private static volatile NotificationCenter globalInstance;
 
     @UiThread
     public static NotificationCenter getInstance(int num) {
-        NotificationCenter localInstance = Instance[num];
+        NotificationCenter localInstance = Instance.get(num);
         if (localInstance == null) {
             synchronized (NotificationCenter.class) {
-                localInstance = Instance[num];
+                localInstance = Instance.get(num);
                 if (localInstance == null) {
-                    Instance[num] = localInstance = new NotificationCenter(num);
+                    Instance.set(num, localInstance = new NotificationCenter(num));
                 }
             }
         }
@@ -1148,7 +1148,7 @@ public class NotificationCenter {
 
     public static void sanitize() {
         sanitizeInternal(globalInstance);
-        for (NotificationCenter notificationCenter : Instance) {
+        for (NotificationCenter notificationCenter : Instance.snapshot()) {
             sanitizeInternal(notificationCenter);
         }
     }

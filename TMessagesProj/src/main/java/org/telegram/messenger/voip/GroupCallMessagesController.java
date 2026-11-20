@@ -313,15 +313,15 @@ public class GroupCallMessagesController extends BaseController {
 
     /* * */
 
-    private static volatile GroupCallMessagesController[] Instance = new GroupCallMessagesController[UserConfig.MAX_ACCOUNT_COUNT];
+    private static volatile org.telegram.messenger.AccountStore<GroupCallMessagesController> Instance = new org.telegram.messenger.AccountStore<>();
 
     public static GroupCallMessagesController getInstance(int num) {
-        GroupCallMessagesController localInstance = Instance[num];
+        GroupCallMessagesController localInstance = Instance.get(num);
         if (localInstance == null) {
             synchronized (GroupCallMessagesController.class) {
-                localInstance = Instance[num];
+                localInstance = Instance.get(num);
                 if (localInstance == null) {
-                    Instance[num] = localInstance = new GroupCallMessagesController(num);
+                    Instance.set(num, localInstance = new GroupCallMessagesController(num));
                 }
             }
         }

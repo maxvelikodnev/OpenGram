@@ -11,16 +11,16 @@ import org.telegram.tgnet.tl.TL_update;
 
 public class MemberRequestsController extends BaseController {
 
-    private static final MemberRequestsController[] instances = new MemberRequestsController[UserConfig.MAX_ACCOUNT_COUNT];
+    private static final org.telegram.messenger.AccountStore<MemberRequestsController> instances = new org.telegram.messenger.AccountStore<>();
 
     public static MemberRequestsController getInstance(int accountNum) {
-        MemberRequestsController local = instances[accountNum];
+        MemberRequestsController local = instances.get(accountNum);
         if (local == null) {
             synchronized (MemberRequestsController.class) {
-                local = instances[accountNum];
+                local = instances.get(accountNum);
                 if (local == null) {
                     local = new MemberRequestsController(accountNum);
-                    instances[accountNum] = local;
+                    instances.set(accountNum, local);
                 }
             }
         }

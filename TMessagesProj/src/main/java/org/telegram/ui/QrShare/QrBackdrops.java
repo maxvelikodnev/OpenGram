@@ -26,7 +26,7 @@ public final class QrBackdrops {
 
     private static final String KEY = "qrBackdrops";
 
-    private static final QrBackdrops[] instances = new QrBackdrops[UserConfig.MAX_ACCOUNT_COUNT];
+    private static final org.telegram.messenger.AccountStore<QrBackdrops> instances = new org.telegram.messenger.AccountStore<>();
 
     private final int account;
     private @Nullable TLRPC.TL_shareThemeBackdrops backdrops;
@@ -34,10 +34,10 @@ public final class QrBackdrops {
     private final ArrayList<Runnable> callbacks = new ArrayList<>();
 
     public static QrBackdrops get(int account) {
-        if (instances[account] == null) {
-            instances[account] = new QrBackdrops(account);
+        if (instances.get(account) == null) {
+            instances.set(account, new QrBackdrops(account));
         }
-        return instances[account];
+        return instances.get(account);
     }
 
     private QrBackdrops(int account) {

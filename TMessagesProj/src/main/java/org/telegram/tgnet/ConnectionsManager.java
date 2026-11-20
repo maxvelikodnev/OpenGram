@@ -196,14 +196,14 @@ public class ConnectionsManager extends BaseController {
 
     private static int lastClassGuid = 1;
     
-    private static final ConnectionsManager[] Instance = new ConnectionsManager[UserConfig.MAX_ACCOUNT_COUNT];
+    private static final org.telegram.messenger.AccountStore<ConnectionsManager> Instance = new org.telegram.messenger.AccountStore<>();
     public static ConnectionsManager getInstance(int num) {
-        ConnectionsManager localInstance = Instance[num];
+        ConnectionsManager localInstance = Instance.get(num);
         if (localInstance == null) {
             synchronized (ConnectionsManager.class) {
-                localInstance = Instance[num];
+                localInstance = Instance.get(num);
                 if (localInstance == null) {
-                    Instance[num] = localInstance = new ConnectionsManager(num);
+                    Instance.set(num, localInstance = new ConnectionsManager(num));
                 }
             }
         }
@@ -718,7 +718,7 @@ public class ConnectionsManager extends BaseController {
 
     public static void setLangCode(String langCode) {
         langCode = langCode.replace('_', '-').toLowerCase();
-        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+        for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
             native_setLangCode(a, langCode);
         }
     }
@@ -735,14 +735,14 @@ public class ConnectionsManager extends BaseController {
             String tag = type == PushListenerController.PUSH_TYPE_FIREBASE ? "FIREBASE" : "HUAWEI";
             pushString = SharedConfig.pushStringStatus = "__" + tag + "_GENERATING_SINCE_" + getInstance(0).getCurrentTime() + "__";
         }
-        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+        for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
             native_setRegId(a, pushString);
         }
     }
 
     public static void setSystemLangCode(String langCode) {
         langCode = langCode.replace('_', '-').toLowerCase();
-        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+        for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
             native_setSystemLangCode(a, langCode);
         }
     }
@@ -1009,7 +1009,7 @@ public class ConnectionsManager extends BaseController {
             WebProxyTransport.stop();
         }
 
-        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+        for (int a = 0; a < UserConfig.getAccountSlotsCount(); a++) {
             if (enabled && settings != null && settings.isValid()) {
                 native_setProxySettings(a, address, port, username, password, secret);
             } else {

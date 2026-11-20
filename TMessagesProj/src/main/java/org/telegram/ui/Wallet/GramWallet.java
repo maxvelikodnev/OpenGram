@@ -137,15 +137,15 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
     private final HashMap<TL_wallet.walletTransaction, GramWalletPolling> polling = new HashMap<>();
     private String pollingAddress;
 
-    private static volatile GramWallet[] Instance = new GramWallet[UserConfig.MAX_ACCOUNT_COUNT];
+    private static volatile org.telegram.messenger.AccountStore<GramWallet> Instance = new org.telegram.messenger.AccountStore<>();
 
     public static GramWallet getInstance(int num) {
-        GramWallet localInstance = Instance[num];
+        GramWallet localInstance = Instance.get(num);
         if (localInstance == null) {
             synchronized (GramWallet.class) {
-                localInstance = Instance[num];
+                localInstance = Instance.get(num);
                 if (localInstance == null) {
-                    Instance[num] = localInstance = new GramWallet(num);
+                    Instance.set(num, localInstance = new GramWallet(num));
                 }
             }
         }
@@ -559,7 +559,7 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
     }
 
     public static void cleanup(int currentAccount) {
-        final GramWallet localInstance = Instance[currentAccount];
+        final GramWallet localInstance = Instance.get(currentAccount);
         if (localInstance != null) {
             localInstance.reset();
         }
@@ -584,8 +584,8 @@ public class GramWallet implements GramWalletStreaming.IGramWalletStreamingSubsc
         }
         AndroidUtilities.cancelRunOnUIThread(refreshStreamingHistory);
         synchronized (GramWallet.class) {
-            if (Instance[currentAccount] == this) {
-                Instance[currentAccount] = null;
+            if (Instance.get(currentAccount) == this) {
+                Instance.set(currentAccount, null);
             }
         }
     }
